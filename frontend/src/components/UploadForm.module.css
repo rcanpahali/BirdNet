@@ -54,6 +54,12 @@
   font-weight: 500;
 }
 
+.errorText {
+  margin-top: 8px;
+  color: #c33;
+  font-size: 0.9em;
+}
+
 .submitButton {
   width: 100%;
   padding: 14px;

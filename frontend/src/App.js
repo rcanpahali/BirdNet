@@ -7,39 +7,17 @@ import ResultsPanel from './components/ResultsPanel';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 function App() {
-  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
-  const [lat, setLat] = useState('');
-  const [lon, setLon] = useState('');
-  const [minConf, setMinConf] = useState('0.25');
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      setError(null);
-      setResults(null);
-    }
+  const handleFileSelected = () => {
+    setError(null);
+    setResults(null);
   };
 
-  const handleLatChange = (e) => {
-    setLat(e.target.value);
-  };
-
-  const handleLonChange = (e) => {
-    setLon(e.target.value);
-  };
-
-  const handleMinConfChange = (e) => {
-    setMinConf(e.target.value);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!file) {
+  const handleSubmit = async (values) => {
+    if (!values.file) {
       setError('Please select an audio file');
       return;
     }
@@ -49,11 +27,11 @@ function App() {
     setResults(null);
 
     const formData = new FormData();
-    formData.append('file', file);
-    if (lat) formData.append('lat', lat);
-    if (lon) formData.append('lon', lon);
+    formData.append('file', values.file);
+    if (values.lat) formData.append('lat', values.lat);
+    if (values.lon) formData.append('lon', values.lon);
 
-    const parsedMinConf = parseFloat(minConf);
+    const parsedMinConf = parseFloat(values.minConf);
     formData.append('min_conf', Number.isFinite(parsedMinConf) ? parsedMinConf : 0.25);
 
     try {
@@ -79,16 +57,9 @@ function App() {
         </header>
 
         <UploadForm
-          file={file}
-          lat={lat}
-          lon={lon}
-          minConf={minConf}
           loading={loading}
-          onFileChange={handleFileChange}
-          onLatChange={handleLatChange}
-          onLonChange={handleLonChange}
-          onMinConfChange={handleMinConfChange}
           onSubmit={handleSubmit}
+          onFileSelected={handleFileSelected}
         />
 
         {error && (
