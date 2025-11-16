@@ -8,28 +8,14 @@ A web application for analyzing bird sounds using the BirdNET AI model. Upload a
 - [birdnetlib](https://pypi.org/project/birdnetlib/) – Python interface used to drive the analyzer.
 - [TensorFlow](https://www.tensorflow.org/) – machine learning runtime leveraged by birdnetlib/BirdNET.
 
-## Features
-
-- Upload audio files (mp3, wav, flac, m4a, ogg, wma, aac)
-- Detect bird species using BirdNET AI-Analyzer
-- View detection results with confidence scores and time ranges
-- Optional location data (latitude/longitude) for better accuracy
-- Store analysis metadata and detections in local SQLite for later review
-- Automatic model caching
-- Docker support
-
 ## Tech Stack
 
-- **Backend**: FastAPI (Python 3.9+)
-- **Frontend**: React + TypeScript
-- **ML Library**: birdnetlib (BirdNET-Analyzer)
-- **Containerization**: Docker & Docker Compose
+- **Frontend**: React + TypeScript (Create React App)
+- **Proxy API**: Express.js + TypeScript + SQLite (better-sqlite3)
+- **Analyzer Service**: FastAPI + birdnetlib + TensorFlow
+- **Tooling**: npm workspaces, Docker, docker-compose
 
 ## Quick Start
-
-### Option 1: Docker (Recommended for Production)
-
-**Best for:** Production deployments, consistent environments, team sharing
 
 ```bash
 docker-compose up --build
@@ -37,27 +23,6 @@ docker-compose up --build
 
 **First startup:** 2-5 minutes (downloads ~500MB models)  
 **Subsequent starts:** 10-30 seconds (models cached)
-
-### Option 2: Local Development (Recommended for Development)
-
-**Best for:** Active development, faster iteration, debugging
-
-**Install dependencies (once):**
-
-```bash
-npm install
-```
-
-**Run everything (single command):**
-
-```bash
-npm start
-```
-
-This root command uses `npm-run-all` to launch the BirdNET FastAPI service, the Express proxy, and the React dev server in parallel, keeping logs prefixed and shutting everything down together.
-
-**First startup:** Downloads models (~500MB)  
-**Subsequent starts:** Instant (models cached in `~/.local/share/birdnetlib`)
 
 ### Access the Application
 
@@ -68,73 +33,28 @@ This root command uses `npm-run-all` to launch the BirdNET FastAPI service, the 
 
 ## Installation Details
 
-### Prerequisites
+### Docker
 
-- **Docker**: Docker & Docker Compose (for containerized setup)
-- **Local**: Python 3.9+, Node.js 18+, ffmpeg, 4GB+ RAM
+1. Ensure Docker Desktop (or engine) and docker-compose are available.
+2. From the repo root run `docker-compose up --build`.
+3. Visit the frontend at http://localhost:3000 once the containers report ready.
 
-### Docker Setup
+### Local
 
-```bash
-# Build and start
-docker-compose up --build
-
-# Run in background
-docker-compose up -d --build
-
-# View logs
-docker-compose logs -f birdnet-backend
-```
-
-### Local Setup
-
-**Backend (BirdNET, Python):**
-
-1. Install system dependencies:
-
-   ```bash
-   # macOS
-   brew install ffmpeg libsndfile
-
-   # Ubuntu/Debian
-   sudo apt-get install ffmpeg libsndfile1 libsndfile1-dev libasound2-dev
-
-   # Windows: Download ffmpeg from https://ffmpeg.org
-   ```
-
-2. Set up Python environment:
-
-   ```bash
-   cd backend/birdnet-backend
-   python3 -m venv venv
-   source venv/bin/activate  # Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-
-3. Run server:
-   ```bash
-   ./run.sh  # Easiest - handles venv automatically
-   # OR
-   uvicorn app:app --reload
-   ```
-
-**Express Proxy (Node.js):**
+Minimum versions: Python 3.9+, Node.js 18+, and ffmpeg installed on your PATH.
 
 ```bash
-cd backend/express-backend
+# Install all workspace dependencies
 npm install
-npm run dev
-```
 
-**Frontend:**
-
-```bash
-cd frontend
-npm install
+# Launch FastAPI, Express proxy, and React dev server together
 npm start
-```
 
-The frontend now uses TypeScript. `react-scripts` handles compilation automatically, so no extra build steps are required when running the dev server.
+# (Optional) run services individually
+backend/birdnet-backend/run.sh
+npm run dev --workspace backend/express-backend
+npm start --workspace frontend
+```
 
 ## Performance & Model Caching
 
@@ -161,13 +81,6 @@ docker-compose up --build
 rm -rf ~/.local/share/birdnetlib  # Clear cache
 ```
 
-### Optimizations
-
-- Models cached automatically (persist between runs)
-- Analyzer initialized once at startup (singleton pattern)
-- File size validation
-- Proper error handling and logging
-
 ## Development
 
 ### Running All Services
@@ -176,13 +89,6 @@ rm -rf ~/.local/share/birdnetlib  # Clear cache
 
 ```bash
 docker-compose up
-```
-
-**Local (single terminal):**
-
-```bash
-npm install   # first time only
-npm start
 ```
 
 **Local (manual control):**
@@ -197,15 +103,6 @@ npm start
 cd frontend
 npx tsc --noEmit
 ```
-
-### Helper Scripts
-
-The `backend/birdnet-backend/run.sh` script (macOS/Linux)
-
-- Automatically use the virtual environment
-- Create venv if it doesn't exist
-- Install dependencies if needed
-- Start the server
 
 ## Data & Persistence
 
@@ -224,4 +121,4 @@ The `backend/birdnet-backend/run.sh` script (macOS/Linux)
 
 ## License
 
-This project uses BirdNET models licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License.
+This repository is published for personal, research, and educational use only and carries no commercial grant. The BirdNET models remain licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License, so any deployment must stay non-commercial, provide attribution, and preserve the same license for derivative model artifacts.
