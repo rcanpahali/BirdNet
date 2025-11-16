@@ -14,7 +14,7 @@ A web application for analyzing bird sounds using the BirdNET AI. Upload audio f
 ## Tech Stack
 
 - **Backend**: FastAPI (Python 3.9+)
-- **Frontend**: React
+- **Frontend**: React + TypeScript
 - **ML Library**: birdnetlib (BirdNET-Analyzer)
 - **Containerization**: Docker & Docker Compose
 
@@ -135,6 +135,8 @@ npm install
 npm start
 ```
 
+The frontend now uses TypeScript. `react-scripts` handles compilation automatically, so no extra build steps are required when running the dev server.
+
 ## Usage
 
 1. Open http://localhost:3000 in your browser
@@ -213,6 +215,24 @@ BirdNet/
 │   └── Dockerfile
 ├── docker-compose.yml
 └── README.md
+
+frontend/src highlights:
+
+```
+
+frontend/src/
+├── App.tsx # Root SPA component (TypeScript)
+├── index.tsx # CRA entry point with strict null checks
+├── layout.module.css # Layout styles (CSS Module)
+├── components/
+│ ├── UploadForm.tsx # Formik-powered upload form
+│ ├── ResultsPanel.tsx # Results wrapper
+│ └── DetectionCard.tsx # Detection card
+├── types.ts # Shared frontend types
+└── react-app-env.d.ts # CRA TypeScript ambient types
+
+```
+
 ```
 
 ## Performance & Model Caching
@@ -269,6 +289,13 @@ npm start
 - Terminal 1: `cd backend && ./run.sh`
 - Terminal 2: `cd frontend && npm start`
 
+**Type checking (optional):**
+
+```bash
+cd frontend
+npx tsc --noEmit
+```
+
 ### Helper Scripts
 
 The `run.sh` (macOS/Linux)
@@ -308,74 +335,3 @@ The `run.sh` (macOS/Linux)
 ## License
 
 This project uses BirdNET models licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License.
-
-# Quick Installation Guide for macOS
-
-## Install Python Dependencies
-
-1. **Navigate to the backend directory:**
-
-   ```bash
-   cd backend
-   ```
-
-2. **Create a virtual environment:**
-
-   ```bash
-   python3 -m venv venv
-   ```
-
-3. **Activate the virtual environment:**
-
-   ```bash
-   source venv/bin/activate
-   ```
-
-4. **Install dependencies using pip3:**
-
-   ```bash
-   pip3 install -r requirements.txt
-   ```
-
-   **OR** use python3 -m pip:
-
-   ```bash
-   python3 -m pip install -r requirements.txt
-   ```
-
-## Install System Dependencies
-
-If you haven't already, install Homebrew and then:
-
-```bash
-brew install ffmpeg libsndfile
-```
-
-## Run the Backend
-
-After installing dependencies:
-
-```bash
-# Make sure virtual environment is activated
-source venv/bin/activate
-
-# Run the server
-uvicorn app:app --reload
-```
-
-## Common Issues
-
-**"command not found: pip"**
-
-- Use `pip3` instead of `pip`
-- Or use `python3 -m pip` instead
-
-**"command not found: python3"**
-
-- Install Python 3: `brew install python3`
-- Or download from https://www.python.org/downloads/
-
-**"No module named venv"**
-
-- Make sure you're using Python 3.9+: `python3 --version`
-- Install Python 3 if needed
