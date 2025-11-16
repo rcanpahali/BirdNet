@@ -36,6 +36,7 @@ services:
     volumes:
       - ./backend/express-backend:/app
       - /app/node_modules
+      - ./backend/express-backend/data:/app/data
     command: npm run dev
     depends_on:
       birdnet-backend:

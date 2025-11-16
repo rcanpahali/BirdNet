@@ -5,7 +5,7 @@
 - Full stack app: FastAPI backend in `backend/birdnet-backend/app.py`, Express proxy in `backend/express-backend/src/server.ts`, React SPA in `frontend/src/App.tsx`, orchestrated locally via `docker-compose.yml`.
 - Bird detection relies on `birdnetlib.Analyzer`; first run downloads ~500 MB models cached under `~/.local/share/birdnetlib` or Docker volume `birdnet-models`.
 - API surface is small (`/`, `/health`, `/analyze`); `/analyze` returns detections array consumed directly by the frontend cards.
-- No database or persistence; every request analyzes the uploaded file on demand.
+- Express proxy persists form metadata and detections to SQLite (default `backend/express-backend/data/birdnet.db`).
 
 ## Backend Patterns
 
@@ -17,7 +17,7 @@
 ## Configuration & Dependencies
 
 - Runtime knobs live in `backend/birdnet-backend/config.py` and are overridable via environment variables (`HOST`, `PORT`, `DEBUG`, `DEFAULT_MIN_CONFIDENCE`, etc.); reflect new settings there when adding features.
-- Express proxy configuration lives in `backend/express-backend/.env` (`BIRDNET_API_URL`, `PORT`) and should stay in sync with docker-compose values.
+- Express proxy configuration lives in `backend/express-backend/.env` (`BIRDNET_API_URL`, `PORT`, `MAX_FILE_SIZE`, `DATABASE_PATH`) and should stay in sync with docker-compose values.
 - System dependencies: ffmpeg + libsndfile (see `guide.md` and backend Dockerfile). Ensure docs mention them when adding audio handling features.
 - Requirements pinned in `backend/birdnet-backend/requirements.txt`; tensorflow/librosa versions must stay compatible with the target Python (currently 3.11 in Docker, venv via `run.sh`).
 
@@ -44,6 +44,6 @@
 
 ## Deployment & Ops
 
-- Docker images baked from `backend/birdnet-backend/Dockerfile` (python:3.11-slim), `backend/express-backend/Dockerfile` (node:20-alpine), and `frontend/Dockerfile` (node:18-alpine); model cache persists via named volume.
+- Docker images baked from `backend/birdnet-backend/Dockerfile` (python:3.11-slim), `backend/express-backend/Dockerfile` (node:20-alpine), and `frontend/Dockerfile` (node:18-alpine); model cache persists via named volume and Express SQLite data lives in `backend/express-backend/data` (bind-mounted to `/app/data`).
 - To reset cached models, remove `birdnet-models` volume (`docker volume rm birdnet-models`) or delete `~/.local/share/birdnetlib` locally.
 - Monitor startup logs for analyzer readiness messages (`✓ BirdNET Analyzer ready!`); failures there typically point to missing system deps or download issues.

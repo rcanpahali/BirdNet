@@ -8,6 +8,7 @@ A web application for analyzing bird sounds using the BirdNET AI. Upload audio f
 - Detect bird species using BirdNET AI-Analyzer
 - View detection results with confidence scores and time ranges
 - Optional location data (latitude/longitude) for better accuracy
+- Store analysis metadata and detections in local SQLite for later review
 - Automatic model caching
 - Docker support
 
@@ -200,13 +201,19 @@ The `backend/birdnet-backend/run.sh` script (macOS/Linux)
 - Install dependencies if needed
 - Start the server
 
+## Data & Persistence
+
+- The Express proxy stores every successful analysis and its detections in a SQLite database (default path `backend/express-backend/data/birdnet.db`).
+- Configure the path via the `DATABASE_PATH` environment variable in `backend/express-backend/.env` or Docker Compose; relative paths resolve from the project root.
+- The `data/` directory is ignored by Git. Docker Compose bind-mounts `./backend/express-backend/data` into the container so your history survives rebuilds while remaining local.
+
 ## Architecture Overview
 
 - **Backend**: FastAPI REST API with BirdNET analyzer (initialized at startup)
-- **Proxy**: Express.js layer that forwards requests to the BirdNET analyzer and centralizes future integrations
+- **Proxy**: Express.js layer that forwards requests to the BirdNET analyzer, persists results in SQLite, and centralizes future integrations
 - **Frontend**: React SPA that communicates with the proxy via HTTP
 - **Model Caching**: Models persist in Docker volumes or local directories
-- **Stateless**: No database - all analysis performed on-demand
+- **Persistence**: SQLite database (`backend/express-backend/data/birdnet.db` by default, bind-mounted into the container) records analyses and detections
 
 ## License
 

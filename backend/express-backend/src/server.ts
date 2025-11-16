@@ -4,6 +4,7 @@ import axios, { AxiosError } from 'axios';
 import multer from 'multer';
 import FormData from 'form-data';
 import dotenv from 'dotenv';
+import { recordAnalysis } from './db';
 import { AnalyzerResponse } from './types';
 
 dotenv.config();
@@ -68,6 +69,10 @@ app.post('/analyze', upload.single('file'), async (req: Request, res: Response) 
       min_conf?: string;
     };
 
+    const parsedLat = parseOptionalNumber(lat);
+    const parsedLon = parseOptionalNumber(lon);
+    const parsedMinConf = parseOptionalNumber(minConf);
+
     if (typeof lat === 'string' && lat.trim().length > 0) {
       params.lat = lat.trim();
     }
@@ -93,7 +98,19 @@ app.post('/analyze', upload.single('file'), async (req: Request, res: Response) 
       }
     );
 
-    res.json(axiosResponse.data);
+    const payload = axiosResponse.data;
+
+    recordAnalysis({
+      filename: req.file.originalname,
+      mimetype: req.file.mimetype,
+      fileSize: req.file.size,
+      lat: parsedLat,
+      lon: parsedLon,
+      minConf: parsedMinConf,
+      detections: Array.isArray(payload?.detections) ? payload.detections : [],
+    });
+
+    res.json(payload);
   } catch (error: unknown) {
     const axiosError = axios.isAxiosError(error) ? (error as AxiosError) : undefined;
     const status = axiosError?.response?.status ?? 502;
@@ -143,4 +160,18 @@ function extractUpstreamPayload(
   }
 
   return fallback;
+}
+
+function parseOptionalNumber(value?: string): number | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return undefined;
+  }
+
+  const parsed = Number.parseFloat(trimmed);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
