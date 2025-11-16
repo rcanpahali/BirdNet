@@ -2,6 +2,12 @@
 
 A web application for analyzing bird sounds using the BirdNET AI model. Upload audio files to detect bird species with confidence scores and time ranges.
 
+## References
+
+- [BirdNET-Analyzer](https://github.com/birdnet-team/BirdNET-Analyzer) – upstream analyzer and model definitions.
+- [birdnetlib](https://pypi.org/project/birdnetlib/) – Python interface used to drive the analyzer.
+- [TensorFlow](https://www.tensorflow.org/) – machine learning runtime leveraged by birdnetlib/BirdNET.
+
 ## Features
 
 - Upload audio files (mp3, wav, flac, m4a, ogg, wma, aac)
