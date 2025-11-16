@@ -205,6 +205,7 @@ The `backend/birdnet-backend/run.sh` script (macOS/Linux)
 
 - The Express proxy stores every successful analysis and its detections in a SQLite database (default path `backend/express-backend/data/birdnet.db`).
 - Configure the path via the `DATABASE_PATH` environment variable in `backend/express-backend/.env` or Docker Compose; relative paths resolve from the project root.
+- Schema migrations live in `backend/express-backend/schema.sql`.
 - The `data/` directory is ignored by Git. Docker Compose bind-mounts `./backend/express-backend/data` into the container so your history survives rebuilds while remaining local.
 
 ## Architecture Overview

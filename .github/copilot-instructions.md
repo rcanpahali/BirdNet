@@ -17,7 +17,7 @@
 ## Configuration & Dependencies
 
 - Runtime knobs live in `backend/birdnet-backend/config.py` and are overridable via environment variables (`HOST`, `PORT`, `DEBUG`, `DEFAULT_MIN_CONFIDENCE`, etc.); reflect new settings there when adding features.
-- Express proxy configuration lives in `backend/express-backend/.env` (`BIRDNET_API_URL`, `PORT`, `MAX_FILE_SIZE`, `DATABASE_PATH`) and should stay in sync with docker-compose values.
+- Express proxy configuration lives in `backend/express-backend/.env` (`BIRDNET_API_URL`, `PORT`, `MAX_FILE_SIZE`, `DATABASE_PATH`, `DATABASE_SCHEMA_PATH`) and should stay in sync with docker-compose values.
 - System dependencies: ffmpeg + libsndfile (see `guide.md` and backend Dockerfile). Ensure docs mention them when adding audio handling features.
 - Requirements pinned in `backend/birdnet-backend/requirements.txt`; tensorflow/librosa versions must stay compatible with the target Python (currently 3.11 in Docker, venv via `run.sh`).
 

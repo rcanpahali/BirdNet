@@ -4,7 +4,7 @@ import axios, { AxiosError } from 'axios';
 import multer from 'multer';
 import FormData from 'form-data';
 import dotenv from 'dotenv';
-import { recordAnalysis } from './db';
+import { saveAnalysisResult } from './services/analysisService';
 import { AnalyzerResponse } from './types';
 
 dotenv.config();
@@ -100,7 +100,7 @@ app.post('/analyze', upload.single('file'), async (req: Request, res: Response) 
 
     const payload = axiosResponse.data;
 
-    recordAnalysis({
+    saveAnalysisResult({
       filename: req.file.originalname,
       mimetype: req.file.mimetype,
       fileSize: req.file.size,

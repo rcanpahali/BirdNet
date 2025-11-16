@@ -11,6 +11,7 @@ RUN npm install
 
 # Copy source code
 COPY src ./src
+COPY schema.sql ./schema.sql
 
 # Ensure database directory exists (also persisted via volume)
 RUN mkdir -p /app/data
