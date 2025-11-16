@@ -1,12 +1,13 @@
 import React from 'react';
 import DetectionCard from './DetectionCard';
 import styles from './ResultsPanel.module.css';
+import type { AnalyzerResponse } from '../types';
 
-function ResultsPanel({ results }) {
-  if (!results) {
-    return null;
-  }
+interface ResultsPanelProps {
+  results: AnalyzerResponse;
+}
 
+const ResultsPanel: React.FC<ResultsPanelProps> = ({ results }) => {
   const { detection_count: detectionCount, filename, detections } = results;
 
   return (
@@ -24,12 +25,15 @@ function ResultsPanel({ results }) {
       ) : (
         <div className={styles.detectionsList}>
           {detections.map((detection, index) => (
-            <DetectionCard key={`${detection.common_name}-${detection.start_time}-${index}`} detection={detection} />
+            <DetectionCard
+              key={`${detection.common_name}-${detection.start_time}-${index}`}
+              detection={detection}
+            />
           ))}
         </div>
       )}
     </div>
   );
-}
+};
 
 export default ResultsPanel;

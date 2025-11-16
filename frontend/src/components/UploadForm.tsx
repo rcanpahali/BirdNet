@@ -1,16 +1,29 @@
-import React from 'react';
-import { Formik, Form } from 'formik';
+import React, { ChangeEvent } from 'react';
+import { Formik, Form, FormikHelpers, FormikErrors } from 'formik';
 import styles from './UploadForm.module.css';
 
-const initialValues = {
+export interface UploadFormValues {
+  file: File | null;
+  lat: string;
+  lon: string;
+  minConf: string;
+}
+
+interface UploadFormProps {
+  loading: boolean;
+  onSubmit: (values: UploadFormValues, formikHelpers: FormikHelpers<UploadFormValues>) => Promise<void> | void;
+  onFileSelected?: () => void;
+}
+
+const initialValues: UploadFormValues = {
   file: null,
   lat: '',
   lon: '',
   minConf: '0.25',
 };
 
-const validate = (values) => {
-  const errors = {};
+const validate = (values: UploadFormValues): FormikErrors<UploadFormValues> => {
+  const errors: FormikErrors<UploadFormValues> = {};
 
   if (!values.file) {
     errors.file = 'Please select an audio file';
@@ -34,29 +47,40 @@ const validate = (values) => {
   return errors;
 };
 
-function UploadForm({ loading, onSubmit, onFileSelected }) {
-  return (
-    <Formik
-      initialValues={initialValues}
-      validate={validate}
-      onSubmit={async (values, formikHelpers) => {
-        try {
-          await onSubmit(values, formikHelpers);
-        } finally {
-          formikHelpers.setSubmitting(false);
+const UploadForm: React.FC<UploadFormProps> = ({ loading, onSubmit, onFileSelected }) => (
+  <Formik<UploadFormValues>
+    initialValues={initialValues}
+    validate={validate}
+    onSubmit={async (values, formikHelpers) => {
+      try {
+        await onSubmit(values, formikHelpers);
+      } finally {
+        formikHelpers.setSubmitting(false);
+      }
+    }}
+  >
+    {({
+      values,
+      errors,
+      touched,
+      handleChange,
+      handleBlur,
+      setFieldValue,
+      setFieldTouched,
+      isSubmitting,
+    }) => {
+      const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = event.currentTarget.files?.[0] ?? null;
+        void setFieldValue('file', selectedFile, true);
+        setFieldTouched('file', true, false);
+        if (selectedFile) {
+          onFileSelected?.();
         }
-      }}
-    >
-      {({
-        values,
-        errors,
-        touched,
-        handleChange,
-        handleBlur,
-        setFieldValue,
-        setFieldTouched,
-        isSubmitting,
-      }) => (
+      };
+
+      const hasErrors = Boolean(errors.file || errors.lat || errors.lon || errors.minConf);
+
+      return (
         <Form className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor="file" className={styles.label}>Audio File</label>
@@ -64,14 +88,7 @@ function UploadForm({ loading, onSubmit, onFileSelected }) {
               type="file"
               id="file"
               accept="audio/*"
-              onChange={(event) => {
-                const selectedFile = event.currentTarget.files?.[0] ?? null;
-                setFieldValue('file', selectedFile, true);
-                setFieldTouched('file', true, false);
-                if (selectedFile) {
-                  onFileSelected?.();
-                }
-              }}
+              onChange={handleFileChange}
               disabled={loading || isSubmitting}
               className={styles.fileInput}
             />
@@ -135,19 +152,16 @@ function UploadForm({ loading, onSubmit, onFileSelected }) {
 
           <button
             type="submit"
-            disabled={
-              loading ||
-              isSubmitting ||
-              Object.keys(errors).length > 0
-            }
+            disabled={loading || isSubmitting || hasErrors}
             className={styles.submitButton}
           >
             {loading || isSubmitting ? 'Analyzing...' : 'Analyze Audio'}
           </button>
         </Form>
-      )}
-    </Formik>
-  );
-}
+      );
+    }}
+  </Formik>
+);
 
 export default UploadForm;
+export type { UploadFormProps };

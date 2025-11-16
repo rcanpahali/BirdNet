@@ -1,7 +1,12 @@
 import React from 'react';
 import styles from './DetectionCard.module.css';
+import type { Detection } from '../types';
 
-function DetectionCard({ detection }) {
+interface DetectionCardProps {
+  detection: Detection;
+}
+
+const DetectionCard: React.FC<DetectionCardProps> = ({ detection }) => {
   const {
     common_name: commonName,
     scientific_name: scientificName,
@@ -24,6 +29,6 @@ function DetectionCard({ detection }) {
       </div>
     </div>
   );
-}
+};
 
 export default DetectionCard;
