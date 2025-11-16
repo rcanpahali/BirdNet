@@ -2,11 +2,13 @@
   "name": "birdnet",
   "private": true,
   "workspaces": [
-    "frontend"
+    "frontend",
+    "backend/express-backend"
   ],
   "scripts": {
-    "start": "npm-run-all --parallel backend frontend",
-    "backend": "./backend/run.sh",
+    "start": "npm-run-all --parallel birdnet-backend express-backend frontend",
+    "birdnet-backend": "./backend/birdnet-backend/run.sh",
+    "express-backend": "npm run dev --workspace backend/express-backend",
     "frontend": "npm run start --workspace frontend"
   },
   "devDependencies": {

@@ -2,7 +2,7 @@
 
 ## System Overview
 
-- Full stack app: FastAPI backend in `backend/app.py`, React SPA in `frontend/src/App.js`, orchestrated locally via `docker-compose.yml`.
+- Full stack app: FastAPI backend in `backend/birdnet-backend/app.py`, Express proxy in `backend/express-backend/src/server.ts`, React SPA in `frontend/src/App.tsx`, orchestrated locally via `docker-compose.yml`.
 - Bird detection relies on `birdnetlib.Analyzer`; first run downloads ~500 MB models cached under `~/.local/share/birdnetlib` or Docker volume `birdnet-models`.
 - API surface is small (`/`, `/health`, `/analyze`); `/analyze` returns detections array consumed directly by the frontend cards.
 - No database or persistence; every request analyzes the uploaded file on demand.
@@ -16,32 +16,34 @@
 
 ## Configuration & Dependencies
 
-- Runtime knobs live in `backend/config.py` and are overridable via environment variables (`HOST`, `PORT`, `DEBUG`, `DEFAULT_MIN_CONFIDENCE`, etc.); reflect new settings there when adding features.
+- Runtime knobs live in `backend/birdnet-backend/config.py` and are overridable via environment variables (`HOST`, `PORT`, `DEBUG`, `DEFAULT_MIN_CONFIDENCE`, etc.); reflect new settings there when adding features.
+- Express proxy configuration lives in `backend/express-backend/.env` (`BIRDNET_API_URL`, `PORT`) and should stay in sync with docker-compose values.
 - System dependencies: ffmpeg + libsndfile (see `guide.md` and backend Dockerfile). Ensure docs mention them when adding audio handling features.
-- Requirements pinned in `backend/requirements.txt`; tensorflow/librosa versions must stay compatible with the target Python (currently 3.11 in Docker, venv via `run.sh`).
+- Requirements pinned in `backend/birdnet-backend/requirements.txt`; tensorflow/librosa versions must stay compatible with the target Python (currently 3.11 in Docker, venv via `run.sh`).
 
 ## Running & Debugging
 
-- Easiest dev loop: `cd backend && ./run.sh` (auto-creates venv, installs deps, runs uvicorn) plus `cd frontend && npm start` in another terminal.
+- Easiest dev loop: `npm start` from repo root (spawns BirdNET backend, Express proxy, and React dev server via `npm-run-all`).
+- Manual dev loop: `cd backend/birdnet-backend && ./run.sh`, `cd backend/express-backend && npm run dev`, `cd frontend && npm start` in separate terminals.
 - For Docker parity: `docker-compose up --build`; backend healthcheck waits up to 60 s for model download before the frontend starts.
 - API docs available at `http://localhost:8000/docs`; health probe at `/health` reports analyzer readiness—useful before hitting `/analyze`.
 - Temporary files are cleaned in a `finally` block; preserve that pattern when adding background jobs or async tasks.
 
 ## Frontend Notes
 
-- React app uses Axios against `REACT_APP_API_URL` (defaults to `http://localhost:8000`); configure env var in Docker for cross-container calls.
+- React app uses Axios against `REACT_APP_API_URL` (defaults to `http://localhost:8080`); configure env var in Docker for cross-container calls.
 - UI expects `detection_count` and `detections` array in response; keep payload backwards-compatible or gate changes behind new keys.
 - Styling lives in `frontend/src/App.css`; no component library in use, so maintain the simple card layout if adding new result metadata.
 
 ## Adding Features Safely
 
-- When introducing new endpoints, surface config flags in `config.py`, document them in `README.md`, and reuse global analyzer where possible.
+- When introducing new endpoints, surface config flags in `backend/birdnet-backend/config.py`, document them in `README.md`, and reuse the global analyzer where possible. Keep Express proxy routes thin and forward-compatible with the frontend contract.
 - Preserve file-type and size validation to avoid analyzer crashes; extend `ALLOWED_EXTENSIONS` only after confirming BirdNET support.
 - For long-running tasks, consider background workers but ensure temporary files are still removed and logs clarify processing stages.
 - Tests are not present; if you add any, call out the command needed to run them in this guide so others inherit the workflow.
 
 ## Deployment & Ops
 
-- Docker images baked from `backend/Dockerfile` (python:3.11-slim) and `frontend/Dockerfile` (node:18-alpine); model cache persists via named volume.
+- Docker images baked from `backend/birdnet-backend/Dockerfile` (python:3.11-slim), `backend/express-backend/Dockerfile` (node:20-alpine), and `frontend/Dockerfile` (node:18-alpine); model cache persists via named volume.
 - To reset cached models, remove `birdnet-models` volume (`docker volume rm birdnet-models`) or delete `~/.local/share/birdnetlib` locally.
 - Monitor startup logs for analyzer readiness messages (`✓ BirdNET Analyzer ready!`); failures there typically point to missing system deps or download issues.

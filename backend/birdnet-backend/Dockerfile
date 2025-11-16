@@ -19,6 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY app.py .
+COPY config.py .
 
 # Create directory for model cache (persisted via volume)
 RUN mkdir -p /app/models

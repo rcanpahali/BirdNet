@@ -5,7 +5,7 @@ import UploadForm, { UploadFormValues } from './components/UploadForm';
 import ResultsPanel from './components/ResultsPanel';
 import { AnalyzerResponse } from './types';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 const FALLBACK_ERROR = 'An error occurred';
 
 const getErrorMessage = (err: unknown): string => {

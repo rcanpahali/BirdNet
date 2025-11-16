@@ -41,21 +41,29 @@ docker-compose up --build
 npm install
 ```
 
-**Run both servers (single command):**
+**Run everything (single command):**
 
 ```bash
 npm start
 ```
 
-This root command uses `npm-run-all` to launch `./backend/run.sh` and the React dev server in parallel, keeping logs prefixed and shutting both down together.
+This root command uses `npm-run-all` to launch the BirdNET FastAPI service, the Express proxy, and the React dev server in parallel, keeping logs prefixed and shutting everything down together.
 
 **Run services individually (optional):**
 
-- Backend:
+- BirdNET analyzer (Python):
 
   ```bash
-  cd backend
+  cd backend/birdnet-backend
   ./run.sh
+  ```
+
+- Express proxy (Node.js):
+
+  ```bash
+  cd backend/express-backend
+  npm install
+  npm run dev
   ```
 
 - Frontend (new terminal):
@@ -72,8 +80,9 @@ This root command uses `npm-run-all` to launch `./backend/run.sh` and the React 
 ### Access the Application
 
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
+- **Express Proxy API**: http://localhost:8080
+- **BirdNET Analyzer API**: http://localhost:8000
+- **API Docs (BirdNET)**: http://localhost:8000/docs
 
 ## Installation Details
 
@@ -92,12 +101,12 @@ docker-compose up --build
 docker-compose up -d --build
 
 # View logs
-docker-compose logs -f backend
+docker-compose logs -f birdnet-backend
 ```
 
 ### Local Setup
 
-**Backend:**
+**Backend (BirdNET, Python):**
 
 1. Install system dependencies:
 
@@ -114,7 +123,7 @@ docker-compose logs -f backend
 2. Set up Python environment:
 
    ```bash
-   cd backend
+   cd backend/birdnet-backend
    python3 -m venv venv
    source venv/bin/activate  # Windows: venv\Scripts\activate
    pip install -r requirements.txt
@@ -126,6 +135,14 @@ docker-compose logs -f backend
    # OR
    uvicorn app:app --reload
    ```
+
+**Express Proxy (Node.js):**
+
+```bash
+cd backend/express-backend
+npm install
+npm run dev
+```
 
 **Frontend:**
 
@@ -146,47 +163,9 @@ The frontend now uses TypeScript. `react-scripts` handles compilation automatica
 5. Click "Analyze Audio"
 6. View detected bird species with confidence scores and time ranges
 
-## API Documentation
-
-### Endpoints
-
-- `GET /` - Welcome message
-- `GET /health` - Health check (shows analyzer status)
-- `POST /analyze` - Analyze audio file
-
-### Analyze Endpoint
-
-**Request:**
-
-- `file` (required): Audio file
-- `lat` (optional): Latitude
-- `lon` (optional): Longitude
-- `min_conf` (optional): Minimum confidence (0.0-1.0, default: 0.25)
-
-**Response:**
-
-```json
-{
-  "filename": "sample.mp3",
-  "detections": [
-    {
-      "common_name": "House Finch",
-      "scientific_name": "Haemorhous mexicanus",
-      "confidence": 0.5744,
-      "start_time": 9.0,
-      "end_time": 12.0
-    }
-  ],
-  "detection_count": 1,
-  "analysis_time_seconds": 2.34
-}
-```
-
-Interactive API docs available at http://localhost:8000/docs
-
 ## Configuration
 
-Configure the backend via environment variables or `backend/config.py`:
+Configure the BirdNET backend via environment variables or `backend/birdnet-backend/config.py`:
 
 | Variable                 | Default     | Description                  |
 | ------------------------ | ----------- | ---------------------------- |
@@ -197,42 +176,18 @@ Configure the backend via environment variables or `backend/config.py`:
 | `DEFAULT_MIN_CONFIDENCE` | `0.25`      | Default confidence threshold |
 | `LOG_LEVEL`              | `INFO`      | Logging level                |
 
-Create `backend/.env` to override defaults (see `backend/.env.example`).
+Create `backend/birdnet-backend/.env` to override defaults (copy the keys above as needed).
 
-## Project Structure
+An `.env.example` file is provided for the Express proxy in `backend/express-backend/.env.example`.
 
-```
-BirdNet/
-├── backend/
-│   ├── app.py              # FastAPI application
-│   ├── config.py           # Configuration
-│   ├── requirements.txt    # Python dependencies
-│   ├── run.sh / run.bat    # Helper scripts
-│   └── Dockerfile
-├── frontend/
-│   ├── src/                # React source code
-│   ├── package.json
-│   └── Dockerfile
-├── docker-compose.yml
-└── README.md
+Configure the Express proxy via environment variables or `backend/express-backend/.env`:
 
-frontend/src highlights:
-
-```
-
-frontend/src/
-├── App.tsx # Root SPA component (TypeScript)
-├── index.tsx # CRA entry point with strict null checks
-├── layout.module.css # Layout styles (CSS Module)
-├── components/ # Components and their styles
-├── types.ts # Shared frontend types
-└── react-app-env.d.ts # CRA TypeScript ambient types
-
-```
-
-Each component directory exposes an `index.ts` barrel so imports such as `import UploadForm from './components/UploadForm';` continue to work while keeping component code and styles co-located.
-
-```
+| Variable          | Default                 | Description                                      |
+| ----------------- | ----------------------- | ------------------------------------------------ |
+| `PORT`            | `8080`                  | Express server port                              |
+| `BIRDNET_API_URL` | `http://localhost:8000` | Upstream BirdNET analyzer base URL               |
+| `MAX_FILE_SIZE`   | `104857600`             | Optional upload limit (bytes, defaults to 100MB) |
+| `NODE_ENV`        | `development`           | Node environment (used by Docker compose)        |
 
 ## Performance & Model Caching
 
@@ -268,7 +223,7 @@ rm -rf ~/.local/share/birdnetlib  # Clear cache
 
 ## Development
 
-### Running Both Services
+### Running All Services
 
 **Docker:**
 
@@ -285,8 +240,9 @@ npm start
 
 **Local (manual control):**
 
-- Terminal 1: `cd backend && ./run.sh`
-- Terminal 2: `cd frontend && npm start`
+- Terminal 1: `cd backend/birdnet-backend && ./run.sh`
+- Terminal 2: `cd backend/express-backend && npm run dev`
+- Terminal 3: `cd frontend && npm start`
 
 **Type checking (optional):**
 
@@ -297,7 +253,7 @@ npx tsc --noEmit
 
 ### Helper Scripts
 
-The `run.sh` (macOS/Linux)
+The `backend/birdnet-backend/run.sh` script (macOS/Linux)
 
 - Automatically use the virtual environment
 - Create venv if it doesn't exist
@@ -307,7 +263,8 @@ The `run.sh` (macOS/Linux)
 ## Architecture Overview
 
 - **Backend**: FastAPI REST API with BirdNET analyzer (initialized at startup)
-- **Frontend**: React SPA that communicates with backend via HTTP
+- **Proxy**: Express.js layer that forwards requests to the BirdNET analyzer and centralizes future integrations
+- **Frontend**: React SPA that communicates with the proxy via HTTP
 - **Model Caching**: Models persist in Docker volumes or local directories
 - **Stateless**: No database - all analysis performed on-demand
 
@@ -315,12 +272,12 @@ The `run.sh` (macOS/Linux)
 
 **"command not found: uvicorn"**
 
-- Use `./run.sh` instead (handles venv automatically)
-- Or activate venv: `source venv/bin/activate`
+- Use `backend/birdnet-backend/run.sh` instead (handles venv automatically)
+- Or activate venv: `cd backend/birdnet-backend && source venv/bin/activate`
 
 **"ModuleNotFoundError: resampy"**
 
-- Run: `pip install -r requirements.txt`
+- Run: `cd backend/birdnet-backend && pip install -r requirements.txt`
 
 **Models not loading**
 
@@ -329,7 +286,7 @@ The `run.sh` (macOS/Linux)
 
 **Port already in use**
 
-- Change `PORT` in `backend/config.py` or use `--port` flag
+- Change `PORT` in `backend/birdnet-backend/config.py` or use `--port` flag
 
 ## License
 
