@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './DetectionCard.module.css';
-import type { Detection } from '../types';
+import type { Detection } from '../../types';
 
 interface DetectionCardProps {
   detection: Detection;

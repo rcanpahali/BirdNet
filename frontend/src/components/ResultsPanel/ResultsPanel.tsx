@@ -1,7 +1,7 @@
 import React from 'react';
-import DetectionCard from './DetectionCard';
+import DetectionCard from '../DetectionCard';
 import styles from './ResultsPanel.module.css';
-import type { AnalyzerResponse } from '../types';
+import type { AnalyzerResponse } from '../../types';
 
 interface ResultsPanelProps {
   results: AnalyzerResponse;

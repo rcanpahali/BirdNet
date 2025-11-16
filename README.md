@@ -224,14 +224,13 @@ frontend/src/
 ├── App.tsx # Root SPA component (TypeScript)
 ├── index.tsx # CRA entry point with strict null checks
 ├── layout.module.css # Layout styles (CSS Module)
-├── components/
-│ ├── UploadForm.tsx # Formik-powered upload form
-│ ├── ResultsPanel.tsx # Results wrapper
-│ └── DetectionCard.tsx # Detection card
+├── components/ # Components and their styles
 ├── types.ts # Shared frontend types
 └── react-app-env.d.ts # CRA TypeScript ambient types
 
 ```
+
+Each component directory exposes an `index.ts` barrel so imports such as `import UploadForm from './components/UploadForm';` continue to work while keeping component code and styles co-located.
 
 ```
 
