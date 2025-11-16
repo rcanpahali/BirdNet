@@ -1,0 +1,29 @@
+.results {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.title {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.summary {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 1.1em;
+}
+
+.noDetections {
+  text-align: center;
+  color: #999;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.detectionsList {
+  display: grid;
+  gap: 15px;
+}
