@@ -1,15 +1,15 @@
 version: '3.8'
 
 services:
-  birdnet-backend:
+  birdnet-api:
     build:
-      context: ./backend/birdnet-backend
+      context: ./server/birdnet-api
       dockerfile: Dockerfile
-    container_name: birdnet-backend
+    container_name: birdnet-api
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/birdnet-backend:/app
+      - ./server/birdnet-api:/app
       # Persist BirdNET models between container restarts (speeds up subsequent starts)
       - birdnet-models:/root/.local/share/birdnetlib
     environment:
@@ -22,42 +22,42 @@ services:
       start_period: 60s  # Allow 60s for model download on first run
     restart: unless-stopped
 
-  express-backend:
+  express-api:
     build:
-      context: ./backend/express-backend
+      context: ./server/express-api
       dockerfile: Dockerfile
-    container_name: express-backend
+    container_name: express-api
     ports:
       - "8080:8080"
     environment:
       - NODE_ENV=development
       - PORT=8080
-      - BIRDNET_API_URL=http://birdnet-backend:8000
+      - BIRDNET_API_URL=http://birdnet-api:8000
     volumes:
-      - ./backend/express-backend:/app
+      - ./server/express-api:/app
       - /app/node_modules
-      - ./backend/express-backend/data:/app/data
+      - ./server/express-api/data:/app/data
     command: npm run dev
     depends_on:
-      birdnet-backend:
+      birdnet-api:
         condition: service_healthy
     restart: unless-stopped
 
-  frontend:
+  birdnet-client:
     build:
-      context: ./frontend
+      context: ./birdnet-client
       dockerfile: Dockerfile
-    container_name: birdnet-frontend
+    container_name: birdnet-client
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/app
+      - ./birdnet-client:/app
       - /app/node_modules
     environment:
       - REACT_APP_API_URL=http://localhost:8080
       - CHOKIDAR_USEPOLLING=true
     depends_on:
-      express-backend:
+      express-api:
         condition: service_started
     restart: unless-stopped
 

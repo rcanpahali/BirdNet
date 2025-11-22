@@ -2,14 +2,14 @@
   "name": "birdnet",
   "private": true,
   "workspaces": [
-    "frontend",
-    "backend/express-backend"
+    "birdnet-client",
+    "server/express-api"
   ],
   "scripts": {
-    "start": "npm-run-all --parallel birdnet-backend express-backend frontend",
-    "birdnet-backend": "./backend/birdnet-backend/run.sh",
-    "express-backend": "npm run dev --workspace backend/express-backend",
-    "frontend": "npm run start --workspace frontend"
+    "start": "npm-run-all --parallel birdnet-api express-api birdnet-client",
+    "birdnet-api": "./server/birdnet-api/run.sh",
+    "express-api": "npm run dev --workspace server/express-api",
+    "birdnet-client": "npm run start --workspace birdnet-client"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5"

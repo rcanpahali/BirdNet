@@ -51,9 +51,9 @@ npm install
 npm start
 
 # (Optional) run services individually
-backend/birdnet-backend/run.sh
-npm run dev --workspace backend/express-backend
-npm start --workspace frontend
+server/birdnet-api/run.sh
+npm run dev --workspace server/express-api
+npm start --workspace birdnet-client
 ```
 
 ## Performance & Model Caching
@@ -84,16 +84,16 @@ rm -rf ~/.local/share/birdnetlib  # Clear cache
 **Type checking (optional):**
 
 ```bash
-cd frontend
+cd birdnet-client
 npx tsc --noEmit
 ```
 
 ## Data & Persistence
 
-- The Express proxy stores every successful analysis and its detections in a SQLite database (default path `backend/express-backend/data/birdnet.db`).
-- Configure the path via the `DATABASE_PATH` environment variable in `backend/express-backend/.env` or Docker Compose; relative paths resolve from the project root.
-- Schema migrations live in `backend/express-backend/schema.sql`.
-- The `data/` directory is ignored by Git. Docker Compose bind-mounts `./backend/express-backend/data` into the container so your history survives rebuilds while remaining local.
+- The Express proxy stores every successful analysis and its detections in a SQLite database (default path `server/express-api/data/birdnet.db`).
+- Configure the path via the `DATABASE_PATH` environment variable in `server/express-api/.env` or Docker Compose; relative paths resolve from the project root.
+- Schema migrations live in `server/express-api/schema.sql`.
+- The `data/` directory is ignored by Git. Docker Compose bind-mounts `./server/express-api/data` into the container so your history survives rebuilds while remaining local.
 
 ## Architecture Overview
 
@@ -101,7 +101,7 @@ npx tsc --noEmit
 - **Proxy**: Express.js layer that forwards requests to the BirdNET analyzer, persists results in SQLite, and centralizes future integrations
 - **Frontend**: React SPA that communicates with the proxy via HTTP
 - **Model Caching**: Models persist in Docker volumes or local directories
-- **Persistence**: SQLite database (`backend/express-backend/data/birdnet.db` by default, bind-mounted into the container) records analyses and detections
+- **Persistence**: SQLite database (`server/express-api/data/birdnet.db` by default, bind-mounted into the container) records analyses and detections
 
 ## License
 
